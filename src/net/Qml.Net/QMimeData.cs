@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.Runtime.InteropServices;
 using System.Security;
-using Qml.Net.Internal.Types;
+using Qml.Net.Internal;
 
-namespace Qml.Net.Internal.Qml
+namespace Qml.Net
 {
-    internal class NetQMimeData : BaseDisposable
+    public class QMimeData : BaseDisposable
     {
-        public NetQMimeData(IntPtr handle, bool ownsHandle = true) 
+        public QMimeData(IntPtr handle, bool ownsHandle = true) 
             : base(handle, ownsHandle)
         {
         }
@@ -40,6 +38,16 @@ namespace Qml.Net.Internal.Qml
         public bool HasUrls {
             get {
                 return Interop.NetQMimeData.HasUrls(Handle);
+            }
+        }
+        public string Text {
+            get {
+                return Interop.NetQMimeData.Text(Handle);
+            }
+        }
+        public string HTML {
+            get {
+                return Interop.NetQMimeData.Html(Handle);
             }
         }
     }
@@ -87,5 +95,18 @@ namespace Qml.Net.Internal.Qml
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate bool HasUrlsDel(IntPtr qMimeData);
 
+        [NativeSymbol(Entrypoint = "net_qmimedata_html")]
+        public HtmlDel Html {get; set; }
+
+        [SuppressUnmanagedCodeSecurity]
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate string HtmlDel(IntPtr qMimeData);
+
+        [NativeSymbol(Entrypoint = "net_qmimedata_text")]
+        public TextDel Text {get; set; }
+
+        [SuppressUnmanagedCodeSecurity]
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate string TextDel(IntPtr qMimeData);
     }
 }
