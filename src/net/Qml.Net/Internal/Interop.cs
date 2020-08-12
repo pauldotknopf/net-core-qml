@@ -129,6 +129,7 @@ namespace Qml.Net.Internal
         public static NetQObjectInterop NetQObject { get; }
 
         public static NetQMimeDataInterop NetQMimeData { get; }
+        public static NetAbstractItemModelInterop NetAbstractItemModel { get; }
 
         public static NetQModelIndexInterop NetQModelIndex { get; }
         

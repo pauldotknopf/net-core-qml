@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.Runtime.InteropServices;
 using System.Security;
-using Qml.Net.Internal.Types;
+using Qml.Net.Internal;
 
-namespace Qml.Net.Internal.Qml
+namespace Qml.Net
 {
-    internal class NetQModelIndex : BaseDisposable
+    public class QModelIndex : BaseDisposable
     {
-        public NetQModelIndex(IntPtr handle, bool ownsHandle = true) 
+        internal QModelIndex(IntPtr handle, bool ownsHandle = true) 
             : base(handle, ownsHandle)
         {
         }
@@ -27,9 +25,9 @@ namespace Qml.Net.Internal.Qml
                 return Interop.NetQModelIndex.Row(Handle);
             }
         }
-        public NetQModelIndex Parent {
+        public QModelIndex Parent {
             get {
-                return new NetQModelIndex(Interop.NetQModelIndex.Parent(Handle));
+                return new QModelIndex(Interop.NetQModelIndex.Parent(Handle));
             }
         }
     }
