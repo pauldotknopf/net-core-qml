@@ -29,12 +29,95 @@ namespace Qml.Net
                     return Flags(new QModelIndex(ptr, true));
                 };
                 flagsDelPtr = Marshal.GetFunctionPointerForDelegate(flagsDel);
+                Interop.NetAbstractItemModel.SetFlags(Handle, flagsDelPtr);
             } else {
                 flagsDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.FlagsDelegate>(Interop.NetAbstractItemModel.GetFlags(Handle));
             }
+            if (type.MemberIsOverride("Data")) {
+                dataDel = (ptr, role) => {
+                    var variant = new Internal.Qml.NetVariant();
+                    var ret = Data(new QModelIndex(ptr, true), role);
+                    Helpers.PackValue(ret, variant);
+                    return variant.Handle;
+                };
+                dataDelPtr = Marshal.GetFunctionPointerForDelegate(dataDel);
+                Interop.NetAbstractItemModel.SetData(Handle, dataDelPtr);
+            } else {
+                dataDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.DataDelegate>(Interop.NetAbstractItemModel.GetData(Handle));
+            }
+            if (type.MemberIsOverride("HeaderData")) {
+                headerDataDel = (section, orientation, role) => {
+                    var variant = new Internal.Qml.NetVariant();
+                    var ret = HeaderData(section, orientation, role);
+                    Helpers.PackValue(ret, variant);
+                    return variant.Handle;
+                };
+                headerDataDelPtr = Marshal.GetFunctionPointerForDelegate(headerDataDel);
+                Interop.NetAbstractItemModel.SetData(Handle, dataDelPtr);
+            } else {
+                headerDataDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.HeaderDataDelegate>(Interop.NetAbstractItemModel.GetHeaderData(Handle));
+            }
+            if (type.MemberIsOverride("RowCount")) {
+                rowCountDel = (idx) => {
+                    return RowCount(new QModelIndex(idx, true));
+                };
+                rowCountDelPtr = Marshal.GetFunctionPointerForDelegate(rowCountDel);
+                Interop.NetAbstractItemModel.SetRowCount(Handle, rowCountDelPtr);
+            } else {
+                rowCountDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.RowCountDelegate>(Interop.NetAbstractItemModel.GetRowCount(Handle));
+            }
+            if (type.MemberIsOverride("ColumnCount")) {
+                columnCountDel = (idx) => {
+                    return RowCount(new QModelIndex(idx, true));
+                };
+                columnCountDelPtr = Marshal.GetFunctionPointerForDelegate(columnCountDel);
+                Interop.NetAbstractItemModel.SetColumnCount(Handle, columnCountDelPtr);
+            } else {
+                columnCountDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.ColumnCountDelegate>(Interop.NetAbstractItemModel.GetColumnCount(Handle));
+            }
+            if (type.MemberIsOverride("Index")) {
+                indexDel = (row, col, ptr) => {
+                    return Index(row, col, new QModelIndex(ptr, true)).Handle;
+                };
+                indexDelPtr = Marshal.GetFunctionPointerForDelegate(indexDel);
+                Interop.NetAbstractItemModel.SetIndex(Handle, indexDelPtr);
+            } else {
+                indexDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.IndexDelegate>(Interop.NetAbstractItemModel.GetColumnCount(Handle));
+            }
+            if (type.MemberIsOverride("Parent")) {
+                parentDel = (child) => {
+                    return Parent(new QModelIndex(child, true)).Handle;
+                };
+                parentDelPtr = Marshal.GetFunctionPointerForDelegate(parentDel);
+                Interop.NetAbstractItemModel.SetParent(Handle, parentDelPtr);
+            } else {
+                parentDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.ParentDelegate>(Interop.NetAbstractItemModel.GetParent(Handle));
+            }
         }
         public virtual int Flags(QModelIndex index) {
-            return flagsDel(Handle);
+            return flagsDel(index.Handle);
+        }
+        public virtual object Data(QModelIndex index, int role) {
+            var obj = dataDel(index.Handle, role);
+            var variant = new Internal.Qml.NetVariant(obj, true);
+            return variant.AsObject();
+        }
+        public virtual object HeaderData(int section, int orientation, int role) {
+            var obj = headerDataDel(section, orientation, role);
+            var variant = new Internal.Qml.NetVariant(obj, true);
+            return variant.AsObject();
+        }
+        public virtual int RowCount(QModelIndex parent) {
+            return rowCountDel(parent.Handle);
+        }
+        public virtual int ColumnCount(QModelIndex parent) {
+            return columnCountDel(parent.Handle);
+        }
+        public virtual QModelIndex Index(int row, int column, QModelIndex parent) {
+            return new QModelIndex(indexDel(row, column, parent.Handle), true);
+        }
+        public virtual QModelIndex Parent(QModelIndex child) {
+            return new QModelIndex(parentDel(child.Handle), true);
         }
         protected override void DisposeUnmanaged(IntPtr ptr)
         {
