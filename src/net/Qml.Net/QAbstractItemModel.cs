@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 using Qml.Net.Internal;
+using System.Collections.Generic;
 
 namespace Qml.Net
 {
@@ -17,6 +18,14 @@ namespace Qml.Net
                 return false;
             }
         }
+    }
+    public enum ItemDataRole {
+        DisplayRole = 0,
+        DecorationRole = 1,
+        EditRole = 2,
+        ToolTipRole = 3,
+        StatusTipRole = 4,
+        WhatsThisRole = 5
     }
     public class QAbstractItemModel : BaseDisposable
     {
@@ -93,6 +102,19 @@ namespace Qml.Net
             } else {
                 parentDel = Marshal.GetDelegateForFunctionPointer<NetAbstractItemModelInterop.ParentDelegate>(Interop.NetAbstractItemModel.GetParent(Handle));
             }
+            if (type.MemberIsOverride("RoleNames")) {
+                roleNamesDel = () => {
+                    var ret = RoleNames();
+                    var hash = Interop.NetAbstractItemModel.CreateHash();
+                    foreach (var item in ret)
+                    {
+                        Interop.NetAbstractItemModel.InsertIntoHash(hash, item.Key, item.Value);
+                    }
+                    return hash;
+                };
+                roleNamesDelPtr = Marshal.GetFunctionPointerForDelegate(roleNamesDel);
+                Interop.NetAbstractItemModel.SetRoleNames(Handle, roleNamesDelPtr);
+            }
         }
         public virtual int Flags(QModelIndex index) {
             return flagsDel(index.Handle);
@@ -123,6 +145,58 @@ namespace Qml.Net
         {
             Interop.NetAbstractItemModel.Destroy(ptr);
         }
+        protected void BeginInsertColumns(QModelIndex parent, int from, int to) {
+            Interop.NetAbstractItemModel.BeginInsertColumns(Handle, parent.Handle, from, to);
+        }
+        protected void EndInsertColumns() {
+            Interop.NetAbstractItemModel.EndInsertColumns(Handle);
+        }
+        protected void BeginRemoveColumns(QModelIndex parent, int from, int to) {
+            Interop.NetAbstractItemModel.BeginRemoveColumns(Handle, parent.Handle, from, to);
+        }
+        protected void EndRemoveColumns() {
+            Interop.NetAbstractItemModel.EndRemoveColumns(Handle);
+        }
+        protected void BeginMoveColumns(QModelIndex sourceParent, int sourceFirst, int sourceLast, QModelIndex destinationParent, int destinationChild) {
+            Interop.NetAbstractItemModel.BeginMoveColumns(Handle, sourceParent.Handle, sourceFirst, sourceLast, destinationParent.Handle, destinationChild);
+        }
+        protected void EndMoveColumns() {
+            Interop.NetAbstractItemModel.EndMoveColumns(Handle);
+        }
+        protected void BeginInsertRows(QModelIndex parent, int from, int to) {
+            Interop.NetAbstractItemModel.BeginInsertRows(Handle, parent.Handle, from, to);
+        }
+        protected void EndInsertRows() {
+            Interop.NetAbstractItemModel.EndInsertRows(Handle);
+        }
+        protected void BeginRemoveRows(QModelIndex parent, int from, int to) {
+            Interop.NetAbstractItemModel.BeginRemoveRows(Handle, parent.Handle, from, to);
+        }
+        protected void EndRemoveRows() {
+            Interop.NetAbstractItemModel.EndRemoveRows(Handle);
+        }
+        protected void BeginMoveRows(QModelIndex sourceParent, int sourceFirst, int sourceLast, QModelIndex destinationParent, int destinationChild) {
+            Interop.NetAbstractItemModel.BeginMoveRows(Handle, sourceParent.Handle, sourceFirst, sourceLast, destinationParent.Handle, destinationChild);
+        }
+        protected void EndMoveRows() {
+            Interop.NetAbstractItemModel.EndMoveRows(Handle);
+        }
+        protected void BeginResetModel() {
+            Interop.NetAbstractItemModel.BeginResetModel(Handle);
+        }
+        protected void EndResetModel() {
+            Interop.NetAbstractItemModel.EndResetModel(Handle);
+        }
+        protected virtual Dictionary<int,string> RoleNames() {
+            return new Dictionary<int, string>(){
+                {(int)ItemDataRole.DisplayRole, "display"},
+                {(int)ItemDataRole.DecorationRole, "decoration"},
+                {(int)ItemDataRole.EditRole, "edit"},
+                {(int)ItemDataRole.ToolTipRole, "toolTip"},
+                {(int)ItemDataRole.StatusTipRole, "statusTip"},
+                {(int)ItemDataRole.WhatsThisRole, "whatsThis"},
+            };
+        }
         private NetAbstractItemModelInterop.FlagsDelegate flagsDel;
         private IntPtr flagsDelPtr;
         private NetAbstractItemModelInterop.DataDelegate dataDel;
@@ -137,6 +211,8 @@ namespace Qml.Net
         private IntPtr indexDelPtr;
         private NetAbstractItemModelInterop.ParentDelegate parentDel;
         private IntPtr parentDelPtr;
+        private NetAbstractItemModelInterop.RoleNamesDelegate roleNamesDel;
+        private IntPtr roleNamesDelPtr;
     }
     internal class NetAbstractItemModelInterop
     {
@@ -163,6 +239,8 @@ namespace Qml.Net
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr ParentDelegate( IntPtr child );
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate IntPtr RoleNamesDelegate();
         //
         // Instance Functions
         //
@@ -228,5 +306,82 @@ namespace Qml.Net
         [NativeSymbol(Entrypoint = "net_abstract_item_model_get_parent")]
         public GetFuncDel GetParent { get; set; }
 
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_set_role_names")]
+        public SetFuncDel SetRoleNames {get; set;}
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_get_role_names")]
+        public GetFuncDel GetRoleNames { get; set; }
+
+        //
+        // Protected Functions
+        //
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void SideEffectDelegate( IntPtr instance );
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endInsertColumns")]
+        public SideEffectDelegate EndInsertColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endInsertRows")]
+        public SideEffectDelegate EndInsertRows { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endMoveColumns")]
+        public SideEffectDelegate EndMoveColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endMoveRows")]
+        public SideEffectDelegate EndMoveRows { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endRemoveColumns")]
+        public SideEffectDelegate EndRemoveColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endRemoveRows")]
+        public SideEffectDelegate EndRemoveRows { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginResetModel")]
+        public SideEffectDelegate BeginResetModel { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_endResetModel")]
+        public SideEffectDelegate EndResetModel { get; set; }
+
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void BeginInsertOrRemoveDelegate( IntPtr instance, IntPtr parent, int first, int last );
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginInsertColumns")]
+        public BeginInsertOrRemoveDelegate BeginInsertColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginInsertRows")]
+        public BeginInsertOrRemoveDelegate BeginInsertRows { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginRemoveColumns")]
+        public BeginInsertOrRemoveDelegate BeginRemoveColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginRemoveRows")]
+        public BeginInsertOrRemoveDelegate BeginRemoveRows { get; set; }
+
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void BeginMoveDelegate( IntPtr instance, IntPtr sourceParent, int sourceFirst, int sourceLast, IntPtr destinationParent, int destinationChild );
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginMoveColumns")]
+        public BeginMoveDelegate BeginMoveColumns { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_abstract_item_model_beginMoveRows")]
+        public BeginMoveDelegate BeginMoveRows { get; set; }
+
+        //
+        // QHash
+        //
+
+        [NativeSymbol(Entrypoint = "net_qmodelhash_destroy")]
+        public DestroyDel DestroyHash { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_qmodelhash_create")]
+        public CreateDel CreateHash { get; set; }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void HashInsertDel(IntPtr hashMap, int num, string data);
+
+        [NativeSymbol(Entrypoint = "net_qmodelhash_insert")]
+        public HashInsertDel InsertIntoHash { get; set; }
     }
 }
