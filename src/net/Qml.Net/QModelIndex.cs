@@ -11,6 +11,9 @@ namespace Qml.Net
             : base(handle, ownsHandle)
         {
         }
+        public static QModelIndex BlankIndex() {
+            return new QModelIndex(Interop.NetQModelIndex.BlankModelIndex(), true);
+        }
         protected override void DisposeUnmanaged(IntPtr ptr)
         {
             Interop.NetQModelIndex.Destroy(ptr);
@@ -57,6 +60,9 @@ namespace Qml.Net
 
         [NativeSymbol(Entrypoint = "net_qmodelindex_parent")]
         public ParentDel Parent { get; set; }
+
+        [NativeSymbol(Entrypoint = "net_qmodelindex_create")]
+        public NetAbstractItemModelInterop.CreateDel BlankModelIndex { get; set; }
 
         [SuppressUnmanagedCodeSecurity]
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
