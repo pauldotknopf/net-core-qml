@@ -4,7 +4,7 @@ namespace Qml.Net
 {
     public class QmlNetConfig
     {
-        public static string QtBuildVersion => "qt-5.12.2-ad0689c";
+        public static string QtBuildVersion => "qt-5.15.1-7fc8b10";
 
         public static bool ListenForExceptionsWhenInvokingTasks { get; set; }
 
@@ -22,6 +22,10 @@ namespace Qml.Net
         {
             if (!QCoreApplication.IsMainThread)
             {
+                Console.WriteLine(@"You are using QML functionality outside the UI Thread!
+Refer to https://github.com/qmlnet/qmlnet/issues/112 to get more information.
+Stack Trace:
+" + System.Environment.StackTrace);
                 throw new Exception(
                     "You must be on the UI thread to perform this task. See https://github.com/qmlnet/qmlnet/issues/112");
             }
